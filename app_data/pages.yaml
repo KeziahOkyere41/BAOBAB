@@ -1,0 +1,17 @@
+# list of pages:
+- url: /about
+  title: About
+  description: About
+  template: about.html
+
+
+- url: /contact
+  title: Contact
+  description: Contact
+  template: contact.html
+
+
+- url: /faq
+  title: Frequently Asked Questions
+  description: FAQ.
+  template: faq.html
