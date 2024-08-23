@@ -1,0 +1,14 @@
+[Unit]
+Description=Launch InvenioRDM Celery Task
+
+[Service]
+Type=simple
+User=keziah
+StandardOutput=kmsg
+StandardError=kmsg
+WorkingDirectory=/home/keziah/baobab
+EnvironmentFile=home/keziah/baobab/.env
+ExecStart=/usr/local/bin/pipenv run celery --app invenio_app.celery worker --beat --events --loglevel INFO
+
+[Install]
+WantedBy=multi-user.target
