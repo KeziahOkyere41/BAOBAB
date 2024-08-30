@@ -1,0 +1,17 @@
+#list of users:
+- email: "sefakor.ankora@wacren.net"
+  username: "sefakor"
+  full_name: "Sefakor Ankora"
+  affiliations: "WACREN"
+  active: True
+  confirmed: True
+  password: "diamond"
+
+
+- email: "nharnhayhaar208@gmail.com"
+  username: "nana_yaa"
+  full_name: "Nana Yaa"
+  affiliations: "WACREN"
+  active: True
+  confirmed: True
+  password: "diamond41"
