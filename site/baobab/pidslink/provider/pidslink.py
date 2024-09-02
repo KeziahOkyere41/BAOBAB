@@ -16,7 +16,7 @@ from flask import current_app
 from invenio_pidstore.models import PIDStatus
 
 from baobab.pidslink_service.rest_client import PIDsLinkRESTClient
-from pidslink_service.errors import (PIDsLinkError)
+from baobab.pidslink_service.errors import (PIDsLinkError)
 from invenio_pidstore.models import PIDStatus
 from invenio_rdm_records.services.pids.providers import PIDProvider
 
