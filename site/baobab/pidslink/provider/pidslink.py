@@ -133,7 +133,7 @@ class PIDsLinkPIDProvider(PIDProvider):
     @classmethod
     def is_enabled(cls, app):
         """Determine if pidslink is enabled or not."""
-        return app.config.get("PIDSLINK_ENABLED", False)
+        return app.config.get("PIDSLINK_ENABLED", True)
 
     def can_modify(self, pid, **kwargs):
         """Checks if the PID can be modified."""
