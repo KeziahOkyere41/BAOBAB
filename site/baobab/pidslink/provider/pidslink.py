@@ -44,7 +44,7 @@ class PIDsLinkClient:
         prefix = self.cfg("prefix")
         if not prefix:
             raise RuntimeError("Invalid ARK prefix configured.")
-        ark_format = self.cfg("format", "{prefix}/{id}")
+        ark_format = self.cfg("format", "ark:/${prefix}/${value}")
         return ark_format.format(prefix=prefix, id=record.pid.pid_value)
 
     def check_credentials(self, **kwargs):
