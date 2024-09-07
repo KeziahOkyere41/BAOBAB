@@ -14,5 +14,5 @@ PIDSLINK_PREFIX = ""
 PIDSLINK_TEST_MODE = True
 """PIDsLink test mode enabled."""
 
-PIDSLINK_FORMAT = "{prefix}/{id}"
+PIDSLINK_FORMAT = "ark:/${prefix}/${value}"
 """A string used for formatting the ARK or a callable.
