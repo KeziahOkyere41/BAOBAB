@@ -1,0 +1,40 @@
+<div class="footer-bottom sub-footer">
+    <div class="ui container">
+    <div class="ui grid" style="flex-wrap: nowrap !important; justify-content: space-between !important;
+      padding-top: 2rem !important; margin: 0px !important;">
+        <div class="eight wide column left middle aligned">
+          {%- block footer_bottom_left %}
+            {% trans invenio_rdm="https://wacren.net" %}
+              Operated by
+              <a
+                href="{{ invenio_rdm }}">WACREN</a>{% endtrans %}
+          {%- endblock footer_bottom_left %}
+  
+        </div>
+        <div>This platform is supported by the AC3 project (co-funded by European Commission)</div>
+      <div class="column">
+        <a href="https://wacren.net" aria-label="WACREN">
+        <img src="{{ url_for('static', filename='images/wacren.png') }}"height="30" alt="" />
+         </a>
+    </div>
+    <div class="column">
+      <a href="https://libsense.ren.africa/en/" aria-label="LIBSENSE">
+        <img src="{{ url_for('static', filename='images/libsense.png') }}"height="30" alt="" />
+      </a>
+    </div>
+    <div class="column">
+      <a href="https://africaconnect3.net/" aria-label="AC3">
+        <img src="{{ url_for('static', filename='images/ac3.png') }}"height="30" alt="" />
+      </a>
+    </div>
+    <div class="column">
+      <a href="https://commission.europa.eu/index_en" aria-label="EC">
+        <img src="{{ url_for('static', filename='images/ec.png') }}"height="30" alt="" />
+      </a>
+      </div>
+  
+        </div>
+      </div>
+    </div>
+  </div>
+  

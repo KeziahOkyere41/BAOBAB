@@ -1,0 +1,51 @@
+{#
+
+    Copyright (C) 2019-2020 CERN.
+    Copyright (C) 2019-2020 Northwestern University.
+    Copyright (C) 2021 Graz University of Technology.
+  
+    Invenio App RDM is free software; you can redistribute it and/or modify it
+    under the terms of the MIT License; see LICENSE file for more details.
+  #}
+  {%- block footer_top %}
+    <div class="footer-top">
+      <div class="ui container app-rdm-footer">
+        {%- block footer_top_left %}
+          <div class="ui grid app-rdm-footer" style="padding: 1rem;">
+          <div class="rdm-footer five wide tablet two wide computer column">
+            <h2 class="ui small header">{{ _("BAOBAB") }}</h2>
+            {% trans baobab="https://baobabtest.wacren.net/about" %}
+              <p><a href="{{ baobab }}">About</a></p>
+            {% endtrans %}
+          </div>
+          <div class="rdm-footer five wide tablet two wide computer column">
+            <h2 class="ui small header">{{ _ ("Get involved") }}</h2>
+            {% trans baobab_gh="https://baobabtest.wacren.net/faq" %}
+              <p><a href="{{ baobab_gh }}">FAQ</a></p>
+            {% endtrans %}
+            
+          </div>
+          <div class="rdm-footer five wide tablet two wide computer column">
+            <h2 class="ui small header">{{ _ ("Get in Touch") }}</h2>
+            {% trans baobab_chatroom="https://baobabtest.wacren.net/contact" %}
+              <p><a href="{{ baobab_chatroom }}">Contact</a></p>
+            {% endtrans %}
+   
+          </div>
+  
+        {%- endblock footer_top_left %}
+  
+        </div>
+        </div>
+        
+        <div class="eight wide column right aligned">
+          {%- block footer_top_right %}
+            {%- if config.I18N_LANGUAGES %}
+              {% from "invenio_i18n/macros/language_selector.html" import language_selector_dropdown %}
+              {{ language_selector_dropdown() }}
+            {%- endif %}
+          {%- endblock footer_top_right %}
+      </div>
+  
+    </div>
+  {%- endblock footer_top %}
