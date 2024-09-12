@@ -140,7 +140,7 @@ class PIDsLinkRequest(object):
         HTTP response code in self.code and the response body in self.value.
 
         :param url: Request URL (relative to base_url if set)
-        :param method: Request method (GET, POST, PATCH, DELETE) supported
+        :param method: Request method (GET, POST, PATCH) supported
         :param body: Request body
         :param params: Request parameters
         :param headers: Request headers
