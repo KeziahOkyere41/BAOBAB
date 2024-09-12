@@ -253,4 +253,6 @@ response = client.post_pids(
     source=""
 )
 
-print(f"PID created: {response}")
+# Log or print only the ARK identifier, not the whole response
+ark = response.get('ark', 'Unknown ARK')  # Extract only the 'ark' value
+print(f"PID created: {ark}")
