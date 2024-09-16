@@ -8,16 +8,14 @@
 # it under the terms of the MIT License; see LICENSE file for more details.
 
 """PIDsLink ARK Provider."""
-
 import json
 import warnings
-
+import requests
 from flask import current_app
 from invenio_pidstore.models import PIDStatus
 
 from baobab.pidslink_service.rest_client import PIDsLinkRESTClient
-from baobab.pidslink_service.errors import (PIDsLinkError)
-from invenio_pidstore.models import PIDStatus
+from baobab.pidslink_service.errors import PIDsLinkError, PIDsLinkNoContentError, PIDsLinkServerError
 from invenio_rdm_records.services.pids.providers import PIDProvider
 
 
@@ -28,24 +26,55 @@ class PIDsLinkClient:
         """Constructor."""
         self.name = name
         self._config_prefix = config_prefix or "PIDSLINK"
-        self._api = None
+        self._api = "None"
+        print(f"[INIT] Initialized PIDsLinkClient with name: {self.name}, config_prefix: {self._config_prefix}")
 
     def cfgkey(self, key):
         """Generate a configuration key."""
+        config_key = f"{self._config_prefix}_{key.upper()}"
+        print(f"[CFGKEY] Generated config key: {config_key}")
         return f"{self._config_prefix}_{key.upper()}"
 
     def cfg(self, key, default=None):
         """Get an application config value."""
         return current_app.config.get(self.cfgkey(key), default)
 
-    def generate_ark(self, record):
+    def generate_ark(record):
         """Generate an ARK identifier."""
-        self.check_credentials()
-        prefix = self.cfg("prefix")
-        if not prefix:
-            raise RuntimeError("Invalid ARK prefix configured.")
-        ark_format = self.cfg("format", "ark:/${prefix}/${value}")
-        return ark_format.format(prefix=prefix, id=record.pid.pid_value)
+        print(f"[GENERATE_ARK] Starting ARK generation for record: {record}")
+        
+
+        url = f"https://baobabtest.wacren.net/records/{record.pid.pid_value}"
+        print(f"[GENERATE_ARK] Generated record URL: {url}")
+
+        body = {
+            'naan': "50962",
+            'shoulder': "/bb67854",
+            'url': url,
+            'metadata': "",
+            'type': "",
+            'commitment': "",
+            'identifier': "",
+            'format': "",
+            'relation': "",
+            'source': url
+        }
+        print(f"[GENERATE_ARK] Prepared request body: {body}")
+
+        base_url = "https://pidslinkapi.ren.africa/api/pids/mint/baobab"
+        print(f"[GENERATE_ARK] Sending POST request to: {base_url}")
+        response = requests.post(base_url, json=body)
+
+        if response.status_code != 200:
+            raise RuntimeError(f"Failed to generate ARK. Status code: {response.status_code}, Response: {response.text}")
+
+        response_data = response
+        ark_format = response_data.ark
+
+        if not ark_format:
+            raise RuntimeError("ARK format not found in the response.")
+
+        return ark_format
 
     def check_credentials(self, **kwargs):
         """Check if the client has the necessary credentials set up.
@@ -159,7 +188,7 @@ class PIDsLinkPIDProvider(PIDProvider):
         try:
             doc = self.serializer.dump_obj(record)
             url = kwargs["url"]
-            self.client.api.public_ark(metadata=doc, url=url, ark=pid.pid_value)
+            self.name.api.post(metadata=doc, url=url, ark=pid.pid_value)
             return True
         except PIDsLinkError as e:
             current_app.logger.warning(
@@ -205,14 +234,6 @@ class PIDsLinkPIDProvider(PIDProvider):
             return pid.sync_status(PIDStatus.REGISTERED)
 
         return True
-
-    def restore(self, pid, **kwargs):
-        """Restore previously deactivated ARK."""
-        try:
-            self.client.api.show_ark(pid.pid_value)
-        except ARKNotFoundError as e:
-            if not current_app.config["PIDSLINK_TEST_MODE"]:
-                raise e
 
 
     def validate(self, record, identifier=None, provider=None, **kwargs):
@@ -260,7 +281,7 @@ class PIDsLinkPIDProvider(PIDProvider):
                 del record["pids"][self.pid_type]
 
     def create_and_reserve(self, record, **kwargs):
-        """Create and reserve a ARK for the given record, and update the record with the reserved ARK."""
+        """Create and reserve an ARK for the given record, and update the record with the reserved ARK."""
         if "ark" not in record.pids:
             pid = self.create(record)
             self.reserve(pid, record=record)
@@ -268,3 +289,207 @@ class PIDsLinkPIDProvider(PIDProvider):
             if self.client:
                 pid_attrs["client"] = self.client.name
             record.pids["ark"] = pid_attrs
+
+
+# class PIDsLinkClient:
+#     """PIDsLink Client."""
+
+#     def __init__(self, name, config_prefix=None, **kwargs):
+#         """Constructor."""
+#         self.name = name
+#         self._config_prefix = config_prefix or "PIDSLINK"
+#         self._api = None
+#         print(f"[INIT] Initialized PIDsLinkClient with name: {self.name}, config_prefix: {self._config_prefix}")
+
+#     def cfgkey(self, key):
+#         """Generate a configuration key."""
+#         config_key = f"{self._config_prefix}_{key.upper()}"
+#         print(f"[CFGKEY] Generated config key: {config_key}")
+#         return config_key
+
+#     def cfg(self, key, default=None):
+#         """Get an application config value."""
+#         value = current_app.config.get(self.cfgkey(key), default)
+#         print(f"[CFG] Retrieved config value for key: {key}, value: {value}")
+#         return value
+
+#     def generate_ark(self, record):
+#         """Generate an ARK identifier."""
+#         print(f"[GENERATE_ARK] Starting ARK generation for record: {record}")
+        
+#         # Prepare the URL for the ARK identifier
+#         url = f"https://baobabtest.wacren.net/records/{record.pid.pid_value}"
+#         print(f"[GENERATE_ARK] Generated record URL: {url}")
+
+#         # Prepare the request body
+#         body = {
+#             'naan': "50962",
+#             'shoulder': "/bb67854",
+#             'url': url,
+#             'metadata': "",
+#             'type': "",
+#             'commitment': "",
+#             'identifier': "",
+#             'format': "",
+#             'relation': "",
+#             'source': url
+#         }
+#         print(f"[GENERATE_ARK] Prepared request body: {body}")
+
+#         # Make a POST request to mint a new ARK
+#         base_url = "https://pidslinkapi.ren.africa/api/pids/mint/baobab"
+#         print(f"[GENERATE_ARK] Sending POST request to: {base_url}")
+#         response = requests.post(base_url, json=body)
+
+#         print(f"[GENERATE_ARK] Response Status Code: {response.status_code}")
+#         try:
+#             response_data = response.json()  # Try to parse the response as JSON
+#             print(f"[GENERATE_ARK] Response JSON: {response_data}")
+#         except ValueError:
+#             raise RuntimeError(f"[GENERATE_ARK] Failed to decode JSON. Response: {response.text}")
+
+#         # Check for a successful response
+#         if response.status_code != 200:
+#             raise RuntimeError(f"[GENERATE_ARK] Failed to generate ARK. Status code: {response.status_code}, Response: {response.text}")
+
+#         # Extract the ARK from the response
+#         ark_format = response_data.get("ark")
+#         print(f"[GENERATE_ARK] Extracted ARK format: {ark_format}")
+
+#         if not ark_format:
+#             raise RuntimeError("[GENERATE_ARK] ARK format not found in the response.")
+        
+#         print(f"[GENERATE_ARK] Successfully generated ARK: {ark_format}")
+#         return ark_format
+
+#     def update_ark(self, pids_id, record, url=None):
+#         """Update metadata for an existing ARK."""
+#         print(f"[UPDATE_ARK] Starting update for ARK with PID ID: {pids_id}, URL: {url}")
+
+#         # Prepare the update request body
+#         body = {
+#             'url': url,
+#             'metadata': "",  # Add necessary metadata fields
+#             'type': "",
+#             'commitment': "",
+#             'identifier': "",
+#             'format': "",
+#             'relation': "",
+#             'source': url
+#         }
+#         print(f"[UPDATE_ARK] Prepared request body: {body}")
+
+#         # Make a PUT request to update the ARK
+#         update_url = f"https://pidslinkapi.ren.africa/api/pids/update/{pids_id}"
+#         print(f"[UPDATE_ARK] Sending PUT request to: {update_url}")
+#         response = requests.put(update_url, json=body)
+
+#         print(f"[UPDATE_ARK] Response Status Code: {response.status_code}")
+#         if response.status_code != 200:
+#             raise RuntimeError(f"[UPDATE_ARK] Failed to update ARK. Status code: {response.status_code}, Response: {response.text}")
+
+#         print(f"[UPDATE_ARK] Successfully updated ARK with PID ID: {pids_id}")
+#         return True
+
+#     def check_credentials(self, **kwargs):
+#         """Check if the client has the necessary credentials set up.
+
+#         If the client is running in test mode, credentials are not required.
+#         """
+#         print(f"[CHECK_CREDENTIALS] Checking credentials...")
+#         if not (self.cfg("username") and self.cfg("password") and self.cfg("prefix")):
+#             warnings.warn(
+#                 f"[CHECK_CREDENTIALS] The {self.__class__.__name__} is misconfigured. Please set "
+#                 f"{self.cfgkey('username')}, {self.cfgkey('password')}, and {self.cfgkey('prefix')} "
+#                 "in your configuration.",
+#                 UserWarning,
+#             )
+#         print(f"[CHECK_CREDENTIALS] Credentials check complete.")
+
+#     @property
+#     def api(self):
+#         """PIDsLink REST API client instance."""
+#         if self._api is None:
+#             print(f"[API] Initializing PIDsLinkRESTClient...")
+#             self.check_credentials()
+#             self._api = PIDsLinkRESTClient(
+#                 self.cfg("username"),
+#                 self.cfg("password"),
+#                 self.cfg("prefix"),
+#                 self.cfg("test_mode", True),
+#             )
+#             print(f"[API] PIDsLinkRESTClient initialized.")
+#         return self._api
+
+
+
+# class PIDsLinkPIDProvider(PIDProvider):
+#     """PIDsLink Provider class."""
+
+#     name = "ark"
+
+#     def __init__(
+#         self,
+#         id_,
+#         client=None,
+#         pid_type="ark",
+#         default_status=PIDStatus.NEW,
+#         **kwargs,
+#     ):
+#         """Constructor."""
+#         super().__init__(
+#             id_,
+#             client=(client or PIDsLinkClient("pidslink", config_prefix="PIDSLINK")),
+#             pid_type=pid_type,
+#             default_status=PIDStatus.NEW,
+#             managed=True,
+#             **kwargs
+#         )
+
+#     def generate_id(self, record, **kwargs):
+#         print("[GENERATE_ID] generate_id method called")
+#         pid_value = self.client.generate_ark(record)
+#         print(f"[GENERATE_ID] Generated PID value: {pid_value}")
+#         return pid_value
+
+#     @classmethod
+#     def is_enabled(cls, app):
+#         """Determine if pidslink is enabled or not."""
+#         return app.config.get("PIDSLINK_ENABLED", True)
+
+#     def register(self, pid, record, **kwargs):
+#         print(f"[REGISTER] Attempting to register PID: {pid.pid_value}")
+#         local_success = super().register(pid)
+#         print(f"[REGISTER] super().register(pid) returned: {local_success}")
+#         if not local_success:
+#             print("[REGISTER] Registration failed at super().register(pid)")
+#             return False
+
+#         try:
+#             url = f"https://baobabtest.wacren.net/records/{pid.pid_value}"
+#             print(f"[REGISTER] Generated URL: {url}", flush=True)
+#             print(f"[REGISTER] Calling generate_ark with record: {record}")
+#             ark = self.client.generate_ark(record)
+#             print(f"[REGISTER] Received ARK: {ark}", flush=True)
+#             current_app.logger.info(f"Successfully registered ARK: {ark}")
+#             return True
+#         except Exception as e:
+#             print(f"[REGISTER] Exception occurred: {e}", flush=True)
+#             current_app.logger.warning(
+#                 f"PIDsLink provider error when registering ARK for {pid.pid_value}"
+#             )
+#             self._log_errors(e)
+#             return False
+
+#     def update(self, pid, record, url, **kwargs):
+#         """Update metadata associated with an ARK."""
+#         try:
+#             self.client.update_ark(pid.pid_value, record, url)
+#             return True
+#         except PIDsLinkError as e:
+#             current_app.logger.warning(
+#                 f"PIDsLink provider error when updating ARK for {pid.pid_value}"
+#             )
+#             self._log_errors(e)
+#             return False
+
