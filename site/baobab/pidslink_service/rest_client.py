@@ -126,6 +126,7 @@ class PIDsLinkRESTClient(object):
             "relation": relation,
             "source": source
         }
+        print("data")
         # Remove keys with value None to avoid sending empty fields
         data = {k: v for k, v in data.items() if v is not None}
         request = self._create_request()

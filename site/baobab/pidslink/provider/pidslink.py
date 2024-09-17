@@ -61,13 +61,7 @@ class PIDsLinkClient:
         }
         print(f"[GENERATE_ARK] Prepared request body: {body}")
 
-        base_url = "https://pidslinkapi.ren.africa/api/pids/mint/baobab"
-        print(f"[GENERATE_ARK] Sending POST request to: {base_url}")
-        response = requests.post(base_url, json=body)
-
-        if response.status_code != 200:
-            raise RuntimeError(f"Failed to generate ARK. Status code: {response.status_code}, Response: {response.text}")
-
+        base_
         response_data = response
         ark_format = response_data.ark
 
@@ -154,6 +148,9 @@ class PIDsLinkPIDProvider(PIDProvider):
                 error_prefix = f"Error in `{field}`: " if field else "Error: "
                 current_app.logger.error(f"{error_prefix}{reason}")
 
+    
+    # LOGGING_FS_LEVEL="DEBUG"
+    # current_app.logger.debug("My message")
     def generate_id(self, record, **kwargs):
         """Generate a unique ARK."""
         # Delegate to client
@@ -188,7 +185,7 @@ class PIDsLinkPIDProvider(PIDProvider):
         try:
             doc = self.serializer.dump_obj(record)
             url = kwargs["url"]
-            self.name.api.post(metadata=doc, url=url, ark=pid.pid_value)
+            self.client.api.post(metadata=doc, url=url, ark=pid.pid_value)
             return True
         except PIDsLinkError as e:
             current_app.logger.warning(
